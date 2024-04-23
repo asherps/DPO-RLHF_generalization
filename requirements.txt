@@ -1,0 +1,7 @@
+PyYAML
+numpy
+torch
+transformers
+datasets
+peft
+wandb
