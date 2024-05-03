@@ -98,7 +98,7 @@ def main():
         per_device_eval_batch_size=2,
         warmup_steps=500,
         weight_decay=0.01,
-        logging_dir='./logs',
+        logging_dir=logdir,
         logging_steps=10,
         learning_rate = 1e-3,
     )
@@ -109,7 +109,7 @@ def main():
         train_dataset=dataset,
     )
     trainer.train()
-    
+
 
 
 if __name__ == "__main__":
