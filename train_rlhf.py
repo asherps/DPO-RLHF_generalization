@@ -3,6 +3,7 @@ import utils
 from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer,
+    AutoModel,
     Trainer,
     TrainingArguments,
     BertModel,
@@ -14,6 +15,7 @@ import wandb
 from typing import Dict, Any
 import torch as t
 from peft import get_peft_config, get_peft_model, LoraConfig, TaskType
+from tqdm import tqdm
 
 
 device = t.device("cuda" if t.cuda.is_available() else "cpu")
@@ -150,6 +152,40 @@ def main():
         dataset=dataset,
         tokenizer=tokenizer,
     )
+
+    # load reward model
+    reward_model = AutoModel.from_pretrained(f"PATH TO FILE")
+
+    generation_kwargs = {
+        "min_length": -1,
+        "top_k": 0.0,
+        "top_p": 1.0,
+        "do_sample": True,
+        "pad_token_id": tokenizer.eos_token_id,
+    }
+
+    epochs = 10
+    for epoch in tqdm(range(epochs), "epoch: "):
+        for batch in tqdm(ppo_trainer.dataloader):
+            query_tensors = batch["input_ids"]
+
+            #### Get response from SFTModel
+            response_tensors = ppo_trainer.generate(query_tensors, **generation_kwargs)
+            batch["response"] = [
+                tokenizer.decode(r.squeeze()) for r in response_tensors
+            ]
+
+            #### Compute reward score
+            texts = [q + r for q, r in zip(batch["query"], batch["response"])]
+            pipe_outputs = reward_model(texts)
+            rewards = [t.tensor(output[1]["score"]) for output in pipe_outputs]
+
+            #### Run PPO step
+            stats = ppo_trainer.step(query_tensors, response_tensors, rewards)
+            ppo_trainer.log_stats(stats, batch, rewards)
+
+    #### Save model
+    ppo_trainer.save_pretrained("my_ppo_model")
 
 
 if __name__ == "__main__":
