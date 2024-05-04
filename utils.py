@@ -116,9 +116,9 @@ def load_dataset(
 ) -> datasets.DatasetDict:
     """Load and preprocess dataset."""
 
-    def hh_rlhf_preprocess(sample):
+    def sequential_instructions_preprocess(sample):
         # Process into conversation
-        text = sample["chosen"]
+        text = sample["instruction"]
         human_idx = 0
         human_tag = "\n\nHuman: "
         assistant_tag = "\n\nAssistant: "
@@ -155,9 +155,11 @@ def load_dataset(
                 human_idx = next_human_idx
 
         # Grab base conversation vs final completions
-        sample["prompt"] = tokenizer.apply_chat_template(messages[:-1], tokenize=False)
-        sample["chosen"] = sample["chosen"][assistant_idx + 13 :]
-        sample["rejected"] = sample["rejected"][assistant_idx + 13 :]
+        sample["instructions"] = tokenizer.apply_chat_template(
+            messages[:-1], tokenize=False
+        )
+        sample["instructions"] = sample["instructions"][assistant_idx + 13 :]
+        sample["output"] = sample["output"][assistant_idx + 13 :]
         return sample
 
     # Load dataset
@@ -170,7 +172,7 @@ def load_dataset(
         dataset["test"] = dataset["test"].select(range(10))
 
     # Process dataset
-    if name == "Anthropic/hh-rlhf":
-        dataset = dataset.map(hh_rlhf_preprocess, batched=False)
+    if name == "sequential-instructions":
+        dataset = dataset.map(sequential_instructions_preprocess, batched=False)
         dataset = dataset.filter(lambda s: s["prompt"] is not None)
     return dataset

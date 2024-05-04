@@ -268,28 +268,19 @@ def build_trainer(
     elif training_algorithm == "reward_model":
 
         def prep_for_reward_trainer(sample):
-            chosen = [p + c for p, c in zip(sample["instruction"], sample["output"])]
-            
-            chosen_inputs = tokenizer(
-                chosen,
+            inputs = [p + c for p, c in zip(sample["instruction"], sample["output"])]
+
+            inputs = tokenizer(
+                inputs,
                 return_tensors="pt",
                 padding="max_length",
                 truncation=True,
                 max_length=1536,
             )
-            rejected = [p + r for p, r in zip(sample["instruction"], sample["output"])]
-            rejected_inputs = tokenizer(
-                rejected,
-                return_tensors="pt",
-                padding="max_length",
-                truncation=True,
-                max_length=1536,
-            )
+
             return {
-                "input_ids_chosen": chosen_inputs["input_ids"],
-                "attention_mask_chosen": chosen_inputs["attention_mask"],
-                "input_ids_rejected": rejected_inputs["input_ids"],
-                "attention_mask_rejected": rejected_inputs["attention_mask"],
+                "input_ids_chosen": inputs["input_ids"],
+                "attention_mask_chosen": inputs["attention_mask"],
             }
 
         train_args.max_length = 1536
