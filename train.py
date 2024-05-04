@@ -6,8 +6,10 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "3"
-from transformers import PreTrainedModel
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+from transformers import (
+    PreTrainedModel,
+)
 import getpass
 import datasets
 import peft
@@ -323,9 +325,11 @@ def main():
 
     # Load and process dataset. Make eval set smaller for speed reasons.
     dataset = utils.load_dataset(tokenizer, **hps["dataset"], debug=args.debug)
+    dataset["test"] = dataset["train"].select(range(-50, 0))
     test_size = min(len(dataset["test"]), 2_000)
     dataset["test"] = dataset["test"].shuffle(seed=42).select(range(test_size))
 
+    breakpoint()
     # Setting logging
     logdir = setup_logging(hps)
 
