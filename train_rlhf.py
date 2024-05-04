@@ -1,6 +1,13 @@
-from trl import PPOConfig
+from trl import PPOConfig, PPOTrainer
 import utils
-from transformers import AutoModelForCausalLM, AutoTokenizer, Trainer, TrainingArguments, BertModel, pipeline
+from transformers import (
+    AutoModelForCausalLM,
+    AutoTokenizer,
+    Trainer,
+    TrainingArguments,
+    BertModel,
+    pipeline,
+)
 import yaml
 import getpass
 import wandb
@@ -20,7 +27,12 @@ def setup_logging(hps: Dict[str, Any]):
     )
 
     # Add a couple of keys to the hps object and save it as a yaml file
-    hps["logdir"] = logdir
+    hps["logdir"] = logdirppo_trainer = PPOTrainer(
+        model=model,
+        config=config,
+        dataset=dataset,
+        tokenizer=tokenizer,
+    )
     hps["training_kwargs"]["run_name"] = "/".join(logdir.split("/")[-2:])
     hps["user"] = getpass.getuser()
     hps["tags"] += [
@@ -72,44 +84,49 @@ def main():
     test_size = min(len(dataset["test"]), 2_000)
     dataset["test"] = dataset["test"].shuffle(seed=42).select(range(test_size))
 
+    # Setting logging
+    logdir = setup_logging(hps)
+
+    # I think PPO trainer fine tunes already, so we don't need this
+    #     peft_config = LoraConfig(
+    #     task_type=TaskType.CAUSAL_LM, inference_mode=False, r=32, lora_alpha=16, lora_dropout=0.1,
+    # ) # create LoRA config for the finetuning
+
+    #     model = get_peft_model(model, peft_config) # create a model ready for LoRA finetuning
+
+    #     tokenizer.pad_token = tokenizer.eos_token # need this because tokenizer doesn't have default padding
+
+    #     # fine tune!
+    #     training_args = TrainingArguments(
+    #         output_dir="./results",
+    #         num_train_epochs=3,
+    #         per_device_train_batch_size=1,
+    #         per_device_eval_batch_size=2,
+    #         warmup_steps=500,
+    #         weight_decay=0.01,
+    #         logging_dir=logdir,
+    #         logging_steps=10,
+    #         learning_rate = 1e-3,
+    #     )
+
+    #     trainer = Trainer(
+    #         model=model,
+    #         args=training_args,
+    #         train_dataset=dataset,
+    #     )
+    #     trainer.train()
 
     config = PPOConfig(
         model_name="mistralai/Mistral-7B-Instruct-v0.2",
         learning_rate=1.41e-5,
     )
 
-    # Setting logging
-    logdir = setup_logging(hps)
-    
-
-    peft_config = LoraConfig(
-    task_type=TaskType.CAUSAL_LM, inference_mode=False, r=32, lora_alpha=16, lora_dropout=0.1,
-) # create LoRA config for the finetuning
-
-    model = get_peft_model(model, peft_config) # create a model ready for LoRA finetuning
-
-    tokenizer.pad_token = tokenizer.eos_token # need this because tokenizer doesn't have default padding
-
-    # fine tune!
-    training_args = TrainingArguments(
-        output_dir="./results",
-        num_train_epochs=3,
-        per_device_train_batch_size=1,
-        per_device_eval_batch_size=2,
-        warmup_steps=500,
-        weight_decay=0.01,
-        logging_dir=logdir,
-        logging_steps=10,
-        learning_rate = 1e-3,
-    )
-
-    trainer = Trainer(
+    ppo_trainer = PPOTrainer(
         model=model,
-        args=training_args,
-        train_dataset=dataset,
+        config=config,
+        dataset=dataset,
+        tokenizer=tokenizer,
     )
-    trainer.train()
-
 
 
 if __name__ == "__main__":

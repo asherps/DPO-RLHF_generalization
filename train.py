@@ -18,6 +18,9 @@ import trl
 import wandb
 import utils
 
+""" THIS FILE TRAINS EITHER DPO OR A REWARD MODEL GIVEN A DATASET -- Depending 
+ on which hyperparams you pass it. For instance to train DPO, run python train.py hyperparams/dpo.yaml"""
+
 
 class DPOTrainer(trl.DPOTrainer):
     _tag_names = ["trl"]
