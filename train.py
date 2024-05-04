@@ -268,7 +268,8 @@ def build_trainer(
     elif training_algorithm == "reward_model":
 
         def prep_for_reward_trainer(sample):
-            chosen = [p + c for p, c in zip(sample["prompt"], sample["chosen"])]
+            chosen = [p + c for p, c in zip(sample["instruction"], sample["output"])]
+            
             chosen_inputs = tokenizer(
                 chosen,
                 return_tensors="pt",
@@ -276,7 +277,7 @@ def build_trainer(
                 truncation=True,
                 max_length=1536,
             )
-            rejected = [p + r for p, r in zip(sample["prompt"], sample["rejected"])]
+            rejected = [p + r for p, r in zip(sample["instruction"], sample["output"])]
             rejected_inputs = tokenizer(
                 rejected,
                 return_tensors="pt",
