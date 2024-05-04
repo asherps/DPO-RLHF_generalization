@@ -9,7 +9,7 @@ peft_config_kwargs:
 
 # Dataset hyperparameters
 dataset:
-    name: Anthropic/hh-rlhf
+    name: UCL-DARK/sequential-instructions
     data_dir: default  # Use both harmfuless and helpful splits
 
 # Training hyperparameters
