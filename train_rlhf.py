@@ -121,6 +121,41 @@ def main():
         learning_rate=1.41e-5,
     )
 
+    sent_kwargs = {"return_all_scores": True, "function_to_apply": "none", "batch_size": 16}
+    wandb.init()
+
+
+    # LOAD THE DATASET! 
+    queries_file = "queries.json"  # Replace with the actual path to the queries.json file
+    import json 
+    # Load queries from the JSON file
+    with open(queries_file, "r") as f:
+        queries = json.load(f)
+
+    # Process queries and convert them to input tensors
+    input_tensors = []
+    for query in queries:
+        input_tensor = tokenizer.encode(query, return_tensors="pt").to(device)
+        input_tensors.append(input_tensor)
+
+    # Run the queries through the model
+    outputs = []
+    for input_tensor in input_tensors:
+        output = model.generate(input_tensor)
+        outputs.append(output)
+
+    # Process the model outputs
+    processed_outputs = []
+    for output in outputs:
+        processed_output = tokenizer.decode(output[0], skip_special_tokens=True)
+        processed_outputs.append(processed_output)
+
+    # Print the processed outputs
+    for query, output in zip(queries, processed_outputs):
+        print(f"Query: {query}")
+        print(f"Output: {output}")
+        print()
+
     ppo_trainer = PPOTrainer(
         model=model,
         config=config,
