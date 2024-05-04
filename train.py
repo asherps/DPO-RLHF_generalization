@@ -6,6 +6,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+print(torch.cuda.is_available())
+
 os.environ["CUDA_VISIBLE_DEVICES"] = "3"
 from transformers import (
     PreTrainedModel,
