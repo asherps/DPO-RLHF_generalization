@@ -328,7 +328,6 @@ def main():
     test_size = min(len(dataset["test"]), 2_000)
     dataset["test"] = dataset["test"].shuffle(seed=42).select(range(test_size))
 
-    breakpoint()
     # Setting logging
     logdir = setup_logging(hps)
 
