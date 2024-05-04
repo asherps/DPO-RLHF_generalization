@@ -13,7 +13,7 @@ import transformers
 import trl
 
 
-run_dir = f"/drive/{getpass.getuser()}/project_data/calibrated_alignment/runs"
+run_dir = f"drive/{getpass.getuser()}/project_data/calibrated_alignment/runs"
 
 
 def argparser(include_hyperparams: bool = True):
