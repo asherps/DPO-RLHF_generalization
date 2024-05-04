@@ -188,8 +188,8 @@ class DPOTrainer(trl.DPOTrainer):
 
 def setup_logging(hps: Dict[str, Any]):
     # Choose logging and checkpoint saving directory
-    if hps["dataset"]["name"] == "Anthropic/hh-rlhf":
-        hps["dataset_name"] = "hh_rlhf"
+    if hps["dataset"]["name"] == "UCL-DARK/sequential-instructions":
+        hps["dataset_name"] = "sequential-instructions"
     logdir = utils.choose_log_dir(
         f"{utils.run_dir}/{hps['dataset_name']}/training/{hps['training_algorithm']}",
         debug=hps["debug"],
