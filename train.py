@@ -13,6 +13,7 @@ import getpass
 import datasets
 import peft
 import transformers
+import gc
 import trl
 import wandb
 import utils
@@ -315,12 +316,23 @@ def main():
     if hps["debug"]:
         hps["training_kwargs"]["max_steps"] = 5
 
-    # Load model
-    tokenizer, model = utils.load_model(
+    tokenizer, model_config = utils.load_model(
         hps["model"],
         reward_model=hps["training_algorithm"] == "reward_model",
         eval=False,
     )
+
+    model = torch.nn.Module()  # Placeholder for the actual model structure
+    try:
+        for shard in utils.get_model_shards(model_config):
+            shard = shard.to(memory_format=torch.channels_last)
+            model.load_state_dict(shard.state_dict(), strict=False)
+            del shard
+            gc.collect()
+            torch.cuda.empty_cache()  # Clear memory cache if using GPU
+    except Exception as e:
+        print(f"Failed to load model incrementally: {e}")
+        return
 
     # Load and process dataset. Make eval set smaller for speed reasons.
     dataset = utils.load_dataset(tokenizer, **hps["dataset"], debug=args.debug)
