@@ -6,9 +6,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-print(torch.cuda.is_available())
-
-os.environ["CUDA_VISIBLE_DEVICES"] = "3"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 from transformers import (
     PreTrainedModel,
 )
@@ -331,6 +329,7 @@ def main():
     test_size = min(len(dataset["test"]), 2_000)
     dataset["test"] = dataset["test"].shuffle(seed=42).select(range(test_size))
 
+    breakpoint()
     # Setting logging
     logdir = setup_logging(hps)
 
