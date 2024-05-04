@@ -6,7 +6,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 from transformers import (
     PreTrainedModel,
 )
