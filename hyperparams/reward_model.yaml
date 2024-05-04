@@ -12,6 +12,7 @@ dataset:
     name: UCL-DARK/sequential-instructions
     data_dir: default  # Use both harmfuless and helpful splits
 
+dataset_name: sequential-instructions
 # Training hyperparameters
 training_algorithm: reward_model
 training_algorithm_kwargs: {}
