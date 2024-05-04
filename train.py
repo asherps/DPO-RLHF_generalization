@@ -324,7 +324,7 @@ def main():
 
     # Load and process dataset. Make eval set smaller for speed reasons.
     dataset = utils.load_dataset(tokenizer, **hps["dataset"], debug=args.debug)
-    dataset["test"] = dataset["train"].select(range(-50, 0))
+    dataset["test"] = dataset["train"].select(range(483, 533))
     test_size = min(len(dataset["test"]), 2_000)
     dataset["test"] = dataset["test"].shuffle(seed=42).select(range(test_size))
 
