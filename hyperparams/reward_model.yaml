@@ -9,7 +9,7 @@ peft_config_kwargs:
 
 # Dataset hyperparameters
 dataset:
-    name: kaitchup/UltraFeedback-prompt-chosen-rejected
+    name: Anthropic/hh-rlhf
     data_dir: default  # Use both harmfuless and helpful splits
 
 dataset_name: instruct

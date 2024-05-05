@@ -188,7 +188,7 @@ class DPOTrainer(trl.DPOTrainer):
 
 def setup_logging(hps: Dict[str, Any]):
     # Choose logging and checkpoint saving directory
-    if hps["dataset"]["name"] == "Dahoas/synthetic-instruct-gptj-pairwise":
+    if hps["dataset"]["name"] == "Anthropic/hh-rlhf":
         hps["dataset_name"] = "instruct"
     logdir = utils.choose_log_dir(
         f"{utils.run_dir}/{hps['dataset_name']}/training/{hps['training_algorithm']}",
