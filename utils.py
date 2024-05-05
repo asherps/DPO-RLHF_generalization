@@ -187,7 +187,7 @@ def load_dataset(
         dataset["test"] = dataset["test"].select(range(10))
 
     # Process dataset
-    if name == "Dahoas/synthetic-instruct-gptj-pairwise":
+    if name == "Anthropic/hh-rlhf":
         dataset = dataset.map(hh_rlhf_preprocess, batched=False)
         dataset = dataset.filter(lambda s: s["prompt"] is not None)
     elif name == "Dahoas/synthetic-instruct-gptj-pairwise":
