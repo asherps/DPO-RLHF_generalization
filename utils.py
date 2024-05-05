@@ -155,6 +155,7 @@ def load_dataset(
                 human_idx = next_human_idx
 
         # Grab base conversation vs final completions
+        breakpoint()
         sample["prompt"] = tokenizer.apply_chat_template(messages[:-1], tokenize=False)
         sample["chosen"] = sample["chosen"][assistant_idx + 13 :]
         sample["rejected"] = sample["rejected"][assistant_idx + 13 :]
