@@ -116,6 +116,50 @@ def load_dataset(
 ) -> datasets.DatasetDict:
     """Load and preprocess dataset."""
 
+    def hh_rlhf_preprocess(sample):
+        # Process into conversation
+        text = sample["chosen"]
+        human_idx = 0
+        human_tag = "\n\nHuman: "
+        assistant_tag = "\n\nAssistant: "
+        messages = []
+
+        while True:
+            try:
+                assistant_idx = text.index("\n\nAssistant: ", human_idx)
+                messages.append(
+                    {
+                        "role": "user",
+                        "content": text[human_idx + len(human_tag) : assistant_idx],
+                    }
+                )
+                next_human_idx = text.find(human_tag, assistant_idx)
+            except ValueError as e:
+                break
+            if next_human_idx == -1:
+                messages.append(
+                    {
+                        "role": "assistant",
+                        "content": text[assistant_idx + len(assistant_tag) :],
+                    }
+                )
+                break
+            else:
+                messages.append(
+                    {
+                        "role": "assistant",
+                        "content": text[
+                            assistant_idx + len(assistant_tag) : next_human_idx
+                        ],
+                    }
+                )
+                human_idx = next_human_idx
+
+        # Grab base conversation vs final completions
+        sample["prompt"] = tokenizer.apply_chat_template(messages[:-1], tokenize=False)
+        sample["chosen"] = sample["chosen"][assistant_idx + 13 :]
+        sample["rejected"] = sample["rejected"][assistant_idx + 13 :]
+
     def instruct_preprocess(sample):
         messages = []
         messages.append(
@@ -133,10 +177,9 @@ def load_dataset(
 
     # Load dataset
     dataset = datasets.load_dataset(name, data_dir)
-    # Select only the first 8000 examples
-    dataset = dataset["train"].select(range(8000))
+    dataset = dataset["train"]
     # Split the dataset into training and testing subsets
-    dataset = dataset.train_test_split(test_size=3000, seed=42)
+    dataset = dataset.train_test_split(test_size=0.1, seed=42)
 
     # Make small if debug
     if debug:
@@ -144,7 +187,10 @@ def load_dataset(
         dataset["test"] = dataset["test"].select(range(10))
 
     # Process dataset
-    if name == "Dahoas/synthetic-instruct-gptj-pairwise":
+    if name == "Anthropic/hh-rlhf":
+        dataset = dataset.map(hh_rlhf_preprocess, batched=False)
+        dataset = dataset.filter(lambda s: s["prompt"] is not None)
+    elif name == "Dahoas/synthetic-instruct-gptj-pairwise":
         dataset = dataset.map(instruct_preprocess, batched=False)
         dataset = dataset.filter(lambda s: s["prompt"] is not None)
     return dataset
