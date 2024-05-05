@@ -118,27 +118,35 @@ def load_dataset(
 
     def instruct_preprocess(sample):
         messages = []
-        messages.append(
-            {
-                "role": "user",
-                "type": "prompt",
-                "content": sample["prompt"],
+        messages.append( {
+
+            "role": "user",
+            "prompt": sample["prompt"],
+            "chosen": sample["chosen"],
+            "rejected": sample["rejected"],
             }
         )
-        messages.append(
-            {
-                "role": "assistant",
-                "type": "chosen",
-                "content": sample["chosen"],
-            }
-        )
-        messages.append(
-            {
-                "role": "user",
-                "type": "rejected",
-                "content": sample["rejected"],
-            }
-        )
+        # messages.append(
+        #     {
+        #         "role": "user",
+        #         "type": "prompt",
+        #         "content": sample["prompt"],
+        #     }
+        # )
+        # messages.append(
+        #     {
+        #         "role": "assistant",
+        #         "type": "chosen",
+        #         "content": sample["chosen"],
+        #     }
+        # )
+        # messages.append(
+        #     {
+        #         "role": "user",
+        #         "type": "rejected",
+        #         "content": sample["rejected"],
+        #     }
+        # )
 
         # Grab base conversation vs final completions
         sample["prompt"] = tokenizer.apply_chat_template(messages, tokenize=False)
