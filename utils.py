@@ -121,13 +121,22 @@ def load_dataset(
         messages.append(
             {
                 "role": "user",
+                "type": "prompt",
                 "content": sample["prompt"],
             }
         )
         messages.append(
             {
                 "role": "assistant",
+                "type": "chosen",
                 "content": sample["chosen"],
+            }
+        )
+        messages.append(
+            {
+                "role": "user",
+                "type": "rejected",
+                "content": sample["rejected"],
             }
         )
 
