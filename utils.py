@@ -118,7 +118,7 @@ def load_dataset(
 
     def instruct_preprocess(sample):
         # Process into conversation
-        text = sample["chosen"]
+        text = sample["prompt"]
         human_idx = 0
         human_tag = "\n\nHuman: "
         assistant_tag = "\n\nAssistant: "
