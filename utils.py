@@ -117,42 +117,19 @@ def load_dataset(
     """Load and preprocess dataset."""
 
     def instruct_preprocess(sample):
-        # Process into conversation
-        # text = sample["prompt"]
-        # human_idx = 0
-        # human_tag = "\n\nHuman: "
-        # assistant_tag = "\n\nAssistant: "
         messages = []
-        while True:
-            try:
-                # assistant_idx = text.index("\n\nAssistant: ", human_idx)
-                messages.append(
-                    {
-                        "role": "user",
-                        "content": sample["prompt"],
-                    }
-                )
-                # next_human_idx = text.find(human_tag, assistant_idx)
-            except ValueError as e:
-                break
-            # if next_human_idx == -1:
-            #     messages.append(
-            #         {
-            #             "role": "assistant",
-            #             "content": sample["chosen"],
-            #         }
-            #     )
-            #     break
-            # else:
-            #     messages.append(
-            #         {
-            #             "role": "assistant",
-            #             "content": text[
-            #                 assistant_idx + len(assistant_tag) : next_human_idx
-            #             ],
-            #         }
-            #     )
-            #     human_idx = next_human_idx
+        messages.append(
+            {
+                "role": "user",
+                "content": sample["prompt"],
+            }
+        )
+        messages.append(
+            {
+                "role": "assistant",
+                "content": sample["chosen"],
+            }
+        )
 
         # Grab base conversation vs final completions
         sample["prompt"] = tokenizer.apply_chat_template(messages[:-1], tokenize=False)
