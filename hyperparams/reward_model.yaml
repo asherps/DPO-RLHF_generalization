@@ -9,10 +9,10 @@ peft_config_kwargs:
 
 # Dataset hyperparameters
 dataset:
-    name: UCL-DARK/sequential-instructions
+    name: Dahoas/synthetic-instruct-gptj-pairwise
     data_dir: default  # Use both harmfuless and helpful splits
 
-dataset_name: sequential-instructions
+dataset_name: instruct
 # Training hyperparameters
 training_algorithm: reward_model
 training_algorithm_kwargs: {}

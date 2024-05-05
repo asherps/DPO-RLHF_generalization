@@ -188,8 +188,8 @@ class DPOTrainer(trl.DPOTrainer):
 
 def setup_logging(hps: Dict[str, Any]):
     # Choose logging and checkpoint saving directory
-    if hps["dataset"]["name"] == "UCL-DARK/sequential-instructions":
-        hps["dataset_name"] = "sequential-instructions"
+    if hps["dataset"]["name"] == "Dahoas/synthetic-instruct-gptj-pairwise":
+        hps["dataset_name"] = "instruct"
     logdir = utils.choose_log_dir(
         f"{utils.run_dir}/{hps['dataset_name']}/training/{hps['training_algorithm']}",
         debug=hps["debug"],
@@ -268,19 +268,27 @@ def build_trainer(
     elif training_algorithm == "reward_model":
 
         def prep_for_reward_trainer(sample):
-            inputs = [p + c for p, c in zip(sample["instruction"], sample["output"])]
-
-            inputs = tokenizer(
-                inputs,
+            chosen = [p + c for p, c in zip(sample["prompt"], sample["chosen"])]
+            chosen_inputs = tokenizer(
+                chosen,
                 return_tensors="pt",
                 padding="max_length",
                 truncation=True,
                 max_length=1536,
             )
-
+            rejected = [p + r for p, r in zip(sample["prompt"], sample["rejected"])]
+            rejected_inputs = tokenizer(
+                rejected,
+                return_tensors="pt",
+                padding="max_length",
+                truncation=True,
+                max_length=1536,
+            )
             return {
-                "input_ids_chosen": inputs["input_ids"],
-                "attention_mask_chosen": inputs["attention_mask"],
+                "input_ids_chosen": chosen_inputs["input_ids"],
+                "attention_mask_chosen": chosen_inputs["attention_mask"],
+                "input_ids_rejected": rejected_inputs["input_ids"],
+                "attention_mask_rejected": rejected_inputs["attention_mask"],
             }
 
         train_args.max_length = 1536
