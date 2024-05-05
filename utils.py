@@ -118,35 +118,18 @@ def load_dataset(
 
     def instruct_preprocess(sample):
         messages = []
-        # messages.append( {
-
-        #     "role": "user",
-        #     "prompt": sample["prompt"],
-        #     "chosen": sample["chosen"],
-        #     "rejected": sample["rejected"],
-        #     }
-        # )
         messages.append(
             {
                 "role": "user",
-                # "type": "prompt",
                 "content": sample["prompt"],
             }
         )
         messages.append(
             {
                 "role": "assistant",
-                # "type": "chosen",
                 "content": sample["chosen"],
             }
         )
-        # messages.append(
-        #     {
-        #         "role": "user",
-        #         "type": "rejected",
-        #         "content": sample["rejected"],
-        #     }
-        # )
 
         # Grab base conversation vs final completions
         sample["prompt"] = tokenizer.apply_chat_template(messages[:-1], tokenize=False)
@@ -157,9 +140,9 @@ def load_dataset(
     # Load dataset
     dataset = datasets.load_dataset(name, data_dir)
     # Select only the first 8000 examples
-    dataset = dataset["train"].select(range(20000))
+    dataset = dataset["train"].select(range(8000))
     # Split the dataset into training and testing subsets
-    dataset = dataset.train_test_split(test_size=0.1, seed=42)
+    dataset = dataset.train_test_split(test_size=3000, seed=42)
 
     # Make small if debug
     if debug:
