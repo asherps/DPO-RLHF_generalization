@@ -142,7 +142,7 @@ def load_dataset(
     # Select only the first 8000 examples
     dataset = dataset["train"].select(range(8000))
     # Split the dataset into training and testing subsets
-    dataset = dataset.train_test_split(test_size=3000, seed=42)
+    dataset = dataset.train_test_split(test_size=0.1, seed=42)
 
     # Make small if debug
     if debug:
