@@ -177,7 +177,7 @@ def load_dataset(
 
     # Load dataset
     dataset = datasets.load_dataset(name, data_dir)
-    dataset = dataset["train"][:12000]
+    dataset = dataset["train"]
     # Split the dataset into training and testing subsets
     dataset = dataset.train_test_split(test_size=0.1, seed=42)
 
@@ -187,7 +187,7 @@ def load_dataset(
         dataset["test"] = dataset["test"].select(range(10))
 
     # Process dataset
-    if name == "Anthropic/hh-rlhf":
+    if name == "Dahoas/synthetic-instruct-gptj-pairwise":
         dataset = dataset.map(hh_rlhf_preprocess, batched=False)
         dataset = dataset.filter(lambda s: s["prompt"] is not None)
     elif name == "Dahoas/synthetic-instruct-gptj-pairwise":

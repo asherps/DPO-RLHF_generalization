@@ -1,5 +1,5 @@
 # Model hyperparameters
-model: mistralai/Mistral-7B-v0.1
+model: mistralai/Mistral-7B-Instruct-v0.2
 
 peft_config_class: !!python/name:peft.tuners.lora.LoraConfig
 peft_config_kwargs:
@@ -9,7 +9,7 @@ peft_config_kwargs:
 
 # Dataset hyperparameters
 dataset:
-    name: Anthropic/hh-rlhf
+    name: Dahoas/synthetic-instruct-gptj-pairwise
     data_dir: default  # Use both harmfuless and helpful splits
 
 # Training hyperparameters
