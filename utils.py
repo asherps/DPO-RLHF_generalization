@@ -167,7 +167,7 @@ def load_dataset(
         dataset["test"] = dataset["test"].select(range(10))
 
     # Process dataset
-    if name == "Dahoas/synthetic-instruct-gptj-pairwise":
+    if name == "kaitchup/UltraFeedback-prompt-chosen-rejected":
         dataset = dataset.map(instruct_preprocess, batched=False)
         dataset = dataset.filter(lambda s: s["prompt"] is not None)
     return dataset
