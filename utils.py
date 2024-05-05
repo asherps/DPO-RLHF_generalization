@@ -141,7 +141,7 @@ def load_dataset(
         )
 
         # Grab base conversation vs final completions
-        sample["prompt"] = tokenizer.apply_chat_template(messages[:-1], tokenize=False)
+        sample["prompt"] = tokenizer.apply_chat_template(messages, tokenize=False)
         sample["chosen"] = sample["chosen"]
         sample["rejected"] = sample["rejected"]
         return sample
