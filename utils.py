@@ -118,47 +118,47 @@ def load_dataset(
 
     def instruct_preprocess(sample):
         # Process into conversation
-        text = sample["chosen"]
-        human_idx = 0
-        human_tag = "\n\nHuman: "
-        assistant_tag = "\n\nAssistant: "
+        # text = sample["prompt"]
+        # human_idx = 0
+        # human_tag = "\n\nHuman: "
+        # assistant_tag = "\n\nAssistant: "
         messages = []
         while True:
             try:
-                assistant_idx = text.index("\n\nAssistant: ", human_idx)
+                # assistant_idx = text.index("\n\nAssistant: ", human_idx)
                 messages.append(
                     {
                         "role": "user",
-                        "content": text[human_idx + len(human_tag) : assistant_idx],
+                        "content": sample["prompt"],
                     }
                 )
-                next_human_idx = text.find(human_tag, assistant_idx)
+                # next_human_idx = text.find(human_tag, assistant_idx)
             except ValueError as e:
                 break
-            if next_human_idx == -1:
-                messages.append(
-                    {
-                        "role": "assistant",
-                        "content": text[assistant_idx + len(assistant_tag) :],
-                    }
-                )
-                break
-            else:
-                messages.append(
-                    {
-                        "role": "assistant",
-                        "content": text[
-                            assistant_idx + len(assistant_tag) : next_human_idx
-                        ],
-                    }
-                )
-                human_idx = next_human_idx
+            # if next_human_idx == -1:
+            #     messages.append(
+            #         {
+            #             "role": "assistant",
+            #             "content": sample["chosen"],
+            #         }
+            #     )
+            #     break
+            # else:
+            #     messages.append(
+            #         {
+            #             "role": "assistant",
+            #             "content": text[
+            #                 assistant_idx + len(assistant_tag) : next_human_idx
+            #             ],
+            #         }
+            #     )
+            #     human_idx = next_human_idx
 
         # Grab base conversation vs final completions
         breakpoint()
         sample["prompt"] = tokenizer.apply_chat_template(messages[:-1], tokenize=False)
-        sample["chosen"] = sample["chosen"][assistant_idx + 13 :]
-        sample["rejected"] = sample["rejected"][assistant_idx + 13 :]
+        sample["chosen"] = sample["chosen"]
+        sample["rejected"] = sample["rejected"]
         return sample
 
     # Load dataset
