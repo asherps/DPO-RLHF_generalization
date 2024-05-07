@@ -91,8 +91,8 @@ def model_answers():
     model = model.to(torch.device("cuda:0")).eval()
 
     # Load and preprocess the dataset
-    dataset = load_dataset(
-        tokenizer, "truthful_qa", "multiple_choice", # debug=args.debug
+    dataset = load_dataset( # tokenizer,
+        "truthful_qa", "multiple_choice", # debug=args.debug
     )["validation"]
     subset = dataset[: min(1000, len(dataset))]
     labels, english_questions = preprocess_truthful_qa(subset, tokenizer)
