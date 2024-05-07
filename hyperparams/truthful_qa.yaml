@@ -1,4 +1,5 @@
 # ADD ACTUAL MODEL PATH 
-# regular_model_path: /
+regular_model_path: /drive/user/project_data/calibrated_alignment/runs/instruct/training/dpo/run_4/checkpoints/final/model-00003-of-00003.safetensors
+
 
 temperature: 0.5
