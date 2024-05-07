@@ -86,8 +86,9 @@ def model_answers():
     # Load models and tokenizer
     # tokenizer, _ = load_model(hps["model_path"])
     # tokenizer = AutoTokenizer.from_pretrained(model_name)
-    tokenizer = transformers.AutoTokenizer.from_pretrained(hps["model_path"])
-    _, model = load_model("./drive/user/project_data/calibrated_alignment/runs/instruct/training/dpo/run_4/checkpoints/checkpoint-8000")
+    # tokenizer = transformers.AutoTokenizer.from_pretrained(hps["model_path"])
+    tokenizer, model = load_model("mistralai/Mistral-7B-Instruct-v0.2")
+    # _, model = load_model("./drive/user/project_data/calibrated_alignment/runs/instruct/training/dpo/run_4/checkpoints/checkpoint-8000")
     model = model.to(torch.device("cuda:0")).eval()
 
     # Load and preprocess the dataset
