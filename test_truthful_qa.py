@@ -82,7 +82,8 @@ def model_answers():
         hps = yaml.load(f, Loader=yaml.FullLoader)
 
     # Load models and tokenizer
-    model = load_model(hps["model_path"])
+    tokenizer, _ = load_model(hps["model_path"])
+    model = transformers.AutoModelForCausalLM.from_pretrained("./drive/user/project_data/calibrated_alignment/runs/instruct/training/dpo/run_4/checkpoints/final")
     model = model.to(torch.device("cuda:0")).eval()
 
     # Load and preprocess the dataset
