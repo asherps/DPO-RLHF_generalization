@@ -82,7 +82,7 @@ def model_answers():
         hps = yaml.load(f, Loader=yaml.FullLoader)
 
     # Load models and tokenizer
-    tokenizer, model = load_model(hps["calibrated_model_path"])
+    tokenizer, model = load_model(hps["model_path"])
     model = model.to(torch.device("cuda:0")).eval()
 
     # Load and preprocess the dataset
