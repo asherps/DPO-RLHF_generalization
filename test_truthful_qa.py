@@ -29,6 +29,7 @@ def load_model(
 def load_dataset(
     name: str,  # HuggingFace name of dataset
     data_dir: Optional[str] = None,  # Specifies splits of dataset to use
+    debug = False,
 ):
     """Load and preprocess dataset."""
 
