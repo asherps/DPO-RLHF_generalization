@@ -16,10 +16,9 @@ from typing import Dict, Any
 import torch as t
 from peft import get_peft_config, get_peft_model, LoraConfig, TaskType
 from tqdm import tqdm
-
+import trl
 
 device = t.device("cuda" if t.cuda.is_available() else "cpu")
-
 
 def setup_logging(hps: Dict[str, Any]):
     # Choose logging and checkpoint saving directory
@@ -29,12 +28,8 @@ def setup_logging(hps: Dict[str, Any]):
     )
 
     # Add a couple of keys to the hps object and save it as a yaml file
-    hps["logdir"] = logdirppo_trainer = PPOTrainer(
-        model=model,
-        config=config,
-        dataset=dataset,
-        tokenizer=tokenizer,
-    )
+    hps["logdir"] = logdir
+
     hps["training_kwargs"]["run_name"] = "/".join(logdir.split("/")[-2:])
     hps["user"] = getpass.getuser()
     hps["tags"] += [
@@ -74,49 +69,55 @@ def main():
     if hps["debug"]:
         hps["training_kwargs"]["max_steps"] = 5
 
+
+
     # load model
     tokenizer, model = utils.load_model(
         hps["model"],
-        reward_model=hps["training_algorithm"] == "reward_model",
+        reward_model=False,
         eval=False,
     )
 
+    model = trl.AutoModelForCausalLMWithValueHead.from_pretrained(model)
+
     # Load and process dataset. Make eval set smaller for speed reasons.
-    dataset = utils.load_dataset(tokenizer, **hps["dataset"], debug=args.debug)
+    dataset = utils.load_dataset(tokenizer, **hps["dataset"], debug=True)
+    print(dataset)
+    print(dataset.keys())
     test_size = min(len(dataset["test"]), 2_000)
     dataset["test"] = dataset["test"].shuffle(seed=42).select(range(test_size))
-
     # Setting logging
     logdir = setup_logging(hps)
 
     # I think PPO trainer fine tunes already, so we don't need this
-    #     peft_config = LoraConfig(
-    #     task_type=TaskType.CAUSAL_LM, inference_mode=False, r=32, lora_alpha=16, lora_dropout=0.1,
-    # ) # create LoRA config for the finetuning
+#     peft_config = LoraConfig(
+    
+#     task_type=TaskType.CAUSAL_LM, inference_mode=False, r=32, lora_alpha=16, lora_dropout=0.1,
+# ) # create LoRA config for the finetuning
 
-    #     model = get_peft_model(model, peft_config) # create a model ready for LoRA finetuning
+#     model = get_peft_model(model, peft_config) # create a model ready for LoRA finetuning
 
-    #     tokenizer.pad_token = tokenizer.eos_token # need this because tokenizer doesn't have default padding
+#     tokenizer.pad_token = tokenizer.eos_token # need this because tokenizer doesn't have default padding
 
-    #     # fine tune!
-    #     training_args = TrainingArguments(
-    #         output_dir="./results",
-    #         num_train_epochs=3,
-    #         per_device_train_batch_size=1,
-    #         per_device_eval_batch_size=2,
-    #         warmup_steps=500,
-    #         weight_decay=0.01,
-    #         logging_dir=logdir,
-    #         logging_steps=10,
-    #         learning_rate = 1e-3,
-    #     )
+#     # fine tune!
+#     training_args = TrainingArguments(
+#         output_dir="./results",
+#         num_train_epochs=3,
+#         per_device_train_batch_size=1,
+#         per_device_eval_batch_size=2,
+#         warmup_steps=500,
+#         weight_decay=0.01,
+#         logging_dir=logdir,
+#         logging_steps=10,
+#         learning_rate = 1e-3,
+#     )
 
-    #     trainer = Trainer(
-    #         model=model,
-    #         args=training_args,
-    #         train_dataset=dataset,
-    #     )
-    #     trainer.train()
+#     trainer = Trainer(
+#         model=model,
+#         args=training_args,
+#         train_dataset=dataset,
+#     )
+#     trainer.train()
 
     config = PPOConfig(
         model_name="mistralai/Mistral-7B-Instruct-v0.2",
@@ -128,17 +129,6 @@ def main():
         "function_to_apply": "none",
         "batch_size": 16,
     }
-    wandb.init()
-
-    # LOAD THE DATASET!
-    queries_file = (
-        "queries.json"  # Replace with the actual path to the queries.json file
-    )
-    import json
-
-    # Load queries from the JSON file
-    with open(queries_file, "r") as f:
-        queries = json.load(f)
 
     def tokenize(sample):
         sample["input_ids"] = tokenizer.encode(sample["query"])
@@ -149,12 +139,13 @@ def main():
     ppo_trainer = PPOTrainer(
         model=model,
         config=config,
-        dataset=dataset,
+        dataset=dataset['train'],
         tokenizer=tokenizer,
     )
 
     # load reward model
-    reward_model = AutoModel.from_pretrained(f"PATH TO FILE")
+    reward_model = AutoModelForSequenceClassification.from_pretrained(hps["calibrated_model_path"])
+    model = model.to(torch.device("cuda:0")).eval()
 
     generation_kwargs = {
         "min_length": -1,
@@ -163,6 +154,8 @@ def main():
         "do_sample": True,
         "pad_token_id": tokenizer.eos_token_id,
     }
+
+    # wandb.init()
 
     epochs = 10
     for epoch in tqdm(range(epochs), "epoch: "):
