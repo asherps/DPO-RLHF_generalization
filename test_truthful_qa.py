@@ -29,7 +29,7 @@ def load_model(
 def load_dataset(
     name: str,  # HuggingFace name of dataset
     data_dir: Optional[str] = None,  # Specifies splits of dataset to use
-    debug = False,
+    # debug = False,
 ):
     """Load and preprocess dataset."""
 
@@ -92,7 +92,7 @@ def model_answers():
 
     # Load and preprocess the dataset
     dataset = load_dataset(
-        tokenizer, "truthful_qa", "multiple_choice", debug=args.debug
+        tokenizer, "truthful_qa", "multiple_choice", # debug=args.debug
     )["validation"]
     subset = dataset[: min(1000, len(dataset))]
     labels, english_questions = preprocess_truthful_qa(subset, tokenizer)
