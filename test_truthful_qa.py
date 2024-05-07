@@ -8,6 +8,7 @@ import tqdm
 import utils
 
 
+
 def load_model(
     checkpoint_path: str,
 ):
@@ -82,7 +83,9 @@ def model_answers():
         hps = yaml.load(f, Loader=yaml.FullLoader)
 
     # Load models and tokenizer
-    tokenizer, _ = load_model(hps["model_path"])
+    # tokenizer, _ = load_model(hps["model_path"])
+    # tokenizer = AutoTokenizer.from_pretrained(model_name)
+    tokenizer = transformers.AutoTokenizer.from_pretrained(hps["model_path"])
     model = transformers.AutoModelForCausalLM.from_pretrained("./drive/user/project_data/calibrated_alignment/runs/instruct/training/dpo/run_4/checkpoints/final")
     model = model.to(torch.device("cuda:0")).eval()
 
