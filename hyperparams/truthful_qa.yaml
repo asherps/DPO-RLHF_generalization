@@ -1,5 +1,5 @@
 # ADD ACTUAL MODEL PATH 
-model_path: /drive/user/project_data/calibrated_alignment/runs/instruct/training/dpo/run_4/checkpoints/final/
+model_path: ./drive/user/project_data/calibrated_alignment/runs/instruct/training/dpo/run_4/checkpoints/final/
 
 
 temperature: 0.5
