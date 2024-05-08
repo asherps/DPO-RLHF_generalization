@@ -1,5 +1,5 @@
 # ADD ACTUAL MODEL PATH 
-regular_model_path: /drive/user/project_data/calibrated_alignment/runs/instruct/training/dpo/run_4/checkpoints/final/
+model_path: mistralai/Mistral-7B-Instruct-v0.2
 
 
 temperature: 0.5
