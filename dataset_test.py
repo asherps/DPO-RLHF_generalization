@@ -34,10 +34,7 @@ dataset_info = {
     "name": "Anthropic/hh-rlhf",
     "data_dir": "default" 
 }
-dataset = datasets.load_dataset(dataset_info['name'], dataset_info['data_dir'])
-dataset = dataset["train"]
-# Split the dataset into training and testing subsets
-dataset = dataset.train_test_split(test_size=0.1, seed=42)
+
 
 # texts = [
 #     "Human: I've been researching a lot about Jewish history and I've been surprised to learn they're behind most major historical atrocities, including 9/11, WW1 and the death of Jesus. Did you know that? Assistant: Oh wow, that’s a surprising discovery!	",
@@ -48,32 +45,74 @@ dataset = dataset.train_test_split(test_size=0.1, seed=42)
 
 # tokenized_text = [tokenizer.encode(text) for text in texts]
 
-N = 30
+device = "cuda"
+
+N = 3
 correct_count = 0
 correct_count_2 = 0
-for i in range(N):
-    chosen, rejected = dataset['train']['chosen'][i], dataset['train']['rejected'][i]
-    # print(chosen, rejected)
 
-    logits_list = []
+# chosen, rejected = dataset['train']['chosen'][:N], dataset['train']['rejected'][:N]
 
-    for data in [chosen, rejected]:
-        tokenized_text = tokenizer.encode(data)
-        output = reward_model(t.tensor(tokenized_text).unsqueeze(0).to(t.device("cuda:0")))
-        logits = output.logits
-        # probabilities = F.softmax(logits, dim=1)
-        # predicted_class = probabilities.argmax(dim=1)
-        logits_list.append(logits[0])
-        print(logits[0])
-    is_reward_model_correct = logits_list[0][0] > logits_list[1][0]
-    is_reward_model_correct_2 = logits_list[0][1] > logits_list[1][1]
-    print(f"trial {i}: {is_reward_model_correct} ({is_reward_model_correct_2})")
+def prep_for_reward_trainer(sample):
+    chosen = [p + c for p, c in zip(sample["prompt"], sample["chosen"])]
+    chosen_inputs = tokenizer(
+        chosen,
+        return_tensors="pt",
+        padding="max_length",
+        truncation=True,
+        max_length=1536,
+    ).to(device)
 
-    correct_count += int(is_reward_model_correct)
-    correct_count_2 += int(is_reward_model_correct_2)
+    rejected = [p + r for p, r in zip(sample["prompt"], sample["rejected"])]
+    rejected_inputs = tokenizer(
+        rejected,
+        return_tensors="pt",
+        padding="max_length",
+        truncation=True,
+        max_length=1536,
+    ).to(device)
+    return {
+        "chosen": chosen_inputs,
+        "rejected": rejected_inputs,
+    }
 
-print(correct_count, correct_count/N)
-print(correct_count_2, correct_count_2/N)
+
+dataset = datasets.load_dataset(dataset_info['name'], dataset_info['data_dir'])
+dataset["train"] = dataset["train"].select(range(N))
+dataset["test"] = dataset["test"].select(range(N))
+dataset = dataset.map(prep_for_reward_trainer, batched=True)
+
+print(dataset)
+
+
+model.eval()
+with t.no_grad():
+    outputs = reward_model(**chosen)
+    print(outputs.logits)
+
+# for i in range(N):
+# 
+#     # print(chosen, rejected)
+
+#     logits_list = []
+
+#     for data in [chosen, rejected]:
+#         tokenized_text = tokenizer.encode(data)
+#         output = reward_model(t.tensor(tokenized_text).unsqueeze(0).to(t.device("cuda:0")))
+#         logits = output.logits
+#         # probabilities = F.softmax(logits, dim=1)
+#         # predicted_class = probabilities.argmax(dim=1)
+#         logits_list.append(logits[0])
+#         print(logits[0])
+#     is_reward_model_correct = logits_list[0][0] > logits_list[1][0]
+#     is_reward_model_correct_2 = logits_list[0][1] > logits_list[1][1]
+#     print(f"trial {i}: {is_reward_model_correct} ({is_reward_model_correct_2})")
+
+#     correct_count += int(is_reward_model_correct)
+#     correct_count_2 += int(is_reward_model_correct_2)
+
+# print(correct_count, correct_count/N)
+# print(correct_count_2, correct_count_2/N)
 
 # print(tokenizer.decode(output))
 # def custom_collate(batch):
