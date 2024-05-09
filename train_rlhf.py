@@ -144,6 +144,7 @@ def main():
         sample["input_ids"] = tokenizer.encode(sample["query"])
         return sample
 
+    dataset = dataset.rename_column("prompt", "query")
     dataset = dataset.map(tokenize, batched=False)
     dataset = dataset.remove_columns(["chosen", "rejected"])
 
