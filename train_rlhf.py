@@ -8,6 +8,7 @@ from transformers import (
     TrainingArguments,
     BertModel,
     pipeline,
+    AutoModelForSequenceClassification,
 )
 import yaml
 import getpass
@@ -17,6 +18,7 @@ import torch as t
 from peft import get_peft_config, get_peft_model, LoraConfig, TaskType
 from tqdm import tqdm
 import trl
+
 
 device = t.device("cuda" if t.cuda.is_available() else "cpu")
 
@@ -57,6 +59,16 @@ def setup_logging(hps: Dict[str, Any]):
 
 
 def main():
+    def custom_collate(batch):
+        input_ids = [item['input_ids'] for item in batch]
+        queries = [item['query'] for item in batch]
+
+        max_length = max(len(ids) for ids in input_ids)
+        input_ids = [ids + [tokenizer.pad_token_id] * (max_length - len(ids)) for ids in input_ids]
+
+        input_ids = t.tensor(input_ids)
+        return {'input_ids': input_ids, 'queries': queries}
+
     # Load hyperparameters
     args = utils.argparser().parse_args()
     with open(
@@ -82,8 +94,6 @@ def main():
 
     # Load and process dataset. Make eval set smaller for speed reasons.
     dataset = utils.load_dataset(tokenizer, **hps["dataset"], debug=True)
-    print(dataset)
-    print(dataset.keys())
     test_size = min(len(dataset["test"]), 2_000)
     dataset["test"] = dataset["test"].shuffle(seed=42).select(range(test_size))
     # Setting logging
@@ -135,17 +145,20 @@ def main():
         return sample
 
     dataset = dataset.map(tokenize, batched=False)
+    dataset = dataset.remove_columns(["chosen", "rejected"])
 
     ppo_trainer = PPOTrainer(
         model=model,
         config=config,
-        dataset=dataset['train'],
+        # dataset=dataset['train'],
         tokenizer=tokenizer,
     )
 
+    dl = ppo_trainer.prepare_dataloader(dataset['train'], data_collator=custom_collate)
+
     # load reward model
     reward_model = AutoModelForSequenceClassification.from_pretrained(hps["calibrated_model_path"])
-    model = model.to(torch.device("cuda:0")).eval()
+    reward_model = reward_model.to(t.device("cuda:0")).eval()
 
     generation_kwargs = {
         "min_length": -1,
@@ -153,15 +166,22 @@ def main():
         "top_p": 1.0,
         "do_sample": True,
         "pad_token_id": tokenizer.eos_token_id,
+        "max_new_tokens": 20,
     }
 
     # wandb.init()
+    print("Dataset size:", len(dataset['train']))
 
-    epochs = 10
+    epochs = 1
     for epoch in tqdm(range(epochs), "epoch: "):
-        for batch in tqdm(ppo_trainer.dataloader):
+        for batch in tqdm(dl):
+            if batch is None:
+                print('hi')
+                continue
+                
             query_tensors = batch["input_ids"]
-
+            # print(query_tensors.shape)
+            query_tensors = [tensor.view(-1) for tensor in query_tensors]
             #### Get response from SFTModel
             response_tensors = ppo_trainer.generate(query_tensors, **generation_kwargs)
             batch["response"] = [
@@ -169,10 +189,12 @@ def main():
             ]
 
             #### Compute reward score
-            texts = [q + r for q, r in zip(batch["query"], batch["response"])]
+            texts = [q + r for q, r in zip(batch["queries"], batch["response"])]
+            print(texts)
             pipe_outputs = reward_model(texts)
             rewards = [t.tensor(output[1]["score"]) for output in pipe_outputs]
-
+            print(batch)
+            print(rewards)
             #### Run PPO step
             stats = ppo_trainer.step(query_tensors, response_tensors, rewards)
             ppo_trainer.log_stats(stats, batch, rewards)
