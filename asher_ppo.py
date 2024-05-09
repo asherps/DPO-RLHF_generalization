@@ -155,33 +155,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-    # I think PPO trainer fine tunes already, so we don't need this
-    #     peft_config = LoraConfig(
-
-    #     task_type=TaskType.CAUSAL_LM, inference_mode=False, r=32, lora_alpha=16, lora_dropout=0.1,
-    # ) # create LoRA config for the finetuning
-
-    #     model = get_peft_model(model, peft_config) # create a model ready for LoRA finetuning
-
-    #     tokenizer.pad_token = tokenizer.eos_token # need this because tokenizer doesn't have default padding
-
-    #     # fine tune!
-    #     training_args = TrainingArguments(
-    #         output_dir="./results",
-    #         num_train_epochs=3,
-    #         per_device_train_batch_size=1,
-    #         per_device_eval_batch_size=2,
-    #         warmup_steps=500,
-    #         weight_decay=0.01,
-    #         logging_dir=logdir,
-    #         logging_steps=10,
-    #         learning_rate = 1e-3,
-    #     )
-
-    #     trainer = Trainer(
-    #         model=model,
-    #         args=training_args,
-    #         train_dataset=dataset,
-    #     )
-    #     trainer.train()
