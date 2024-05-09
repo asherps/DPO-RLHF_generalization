@@ -8,7 +8,6 @@ import tqdm
 import utils
 
 
-
 def load_model(
     checkpoint_path: str,
 ):
@@ -85,15 +84,18 @@ def model_answers():
 
     # Load models and tokenizer
     # tokenizer, _ = load_model(hps["model_path"])
-    #tokenizer = AutoTokenizer.from_pretrained(model_name)
+    # tokenizer = AutoTokenizer.from_pretrained(model_name)
     tokenizer = transformers.AutoTokenizer.from_pretrained(hps["model_path"])
     # tokenizer, model = load_model("mistralai/Mistral-7B-Instruct-v0.2")
-    _, model = load_model("./drive/user/project_data/calibrated_alignment/runs/instruct/training/dpo/run_1/checkpoints/checkpoint-10000")
+    _, model = load_model(
+        "./drive/user/project_data/calibrated_alignment/runs/instruct/training/dpo/run_1/checkpoints/checkpoint-10000"
+    )
     model = model.to(torch.device("cuda:0")).eval()
 
     # Load and preprocess the dataset
-    dataset = load_dataset( # tokenizer,
-        "truthful_qa", "multiple_choice", # debug=args.debug
+    dataset = load_dataset(  # tokenizer,
+        "truthful_qa",
+        "multiple_choice",  # debug=args.debug
     )["validation"]
     subset = dataset[: min(1000, len(dataset))]
     labels, english_questions = preprocess_truthful_qa(subset, tokenizer)
