@@ -167,7 +167,7 @@ def main():
         "top_p": 1.0,
         "do_sample": True,
         "pad_token_id": tokenizer.eos_token_id,
-        "max_new_tokens": 20,
+        "max_new_tokens": 10,
     }
 
     # wandb.init()
@@ -185,10 +185,11 @@ def main():
             query_tensors = [tensor.view(-1) for tensor in query_tensors]
             #### Get response from SFTModel
             response_tensors = ppo_trainer.generate(query_tensors, **generation_kwargs)
+
             batch["response"] = [
                 tokenizer.decode(r.squeeze()) for r in response_tensors
             ]
-
+            print(batch["response"])
             #### Compute reward score
             texts = [q + r for q, r in zip(batch["queries"], batch["response"])]
             print(texts)
