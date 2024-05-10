@@ -9,7 +9,8 @@ peft_config_kwargs:
 
 # Dataset hyperparameters
 dataset:
-    name: Dahoas/synthetic-instruct-gptj-pairwise
+    name: Unified-Language-Model-Alignment/Anthropic_HH_Golden
+    # Dahoas/synthetic-instruct-gptj-pairwise
     data_dir: default  # Use both harmfuless and helpful splits
 
 # Training hyperparameters

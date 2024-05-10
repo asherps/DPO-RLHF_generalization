@@ -12,6 +12,13 @@ import torch
 import transformers
 import trl
 
+def check_cuda_gpu_availability():
+    if torch.cuda.is_available():
+        device = torch.cuda.get_device_name(0)
+        print(f"Using CUDA GPU: {device}")
+    else:
+        print("CUDA GPU is not available.")
+
 
 run_dir = f"data"
 
@@ -169,7 +176,6 @@ def load_dataset(
         sample["chosen"] = sample["chosen"][assistant_idx + 13 :]
         sample["rejected"] = sample["rejected"][assistant_idx + 13 :]
         return sample
-
     def instruct_preprocess(sample):
         messages = []
         messages.append(
@@ -203,4 +209,8 @@ def load_dataset(
     elif name == "Dahoas/synthetic-instruct-gptj-pairwise":
         dataset = dataset.map(instruct_preprocess, batched=False)
         dataset = dataset.filter(lambda s: s["prompt"] is not None)
+    elif name == "Unified-Language-Model-Alignment/Anthropic_HH_Golden":
+        dataset = dataset.map(hh_rlhf_preprocess, batched=False)
+        dataset = dataset.filter(lambda s: s["prompt"] is not None)
+        
     return dataset

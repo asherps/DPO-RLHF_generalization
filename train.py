@@ -21,6 +21,13 @@ import utils
 """ THIS FILE TRAINS EITHER DPO OR A REWARD MODEL GIVEN A DATASET -- Depending 
  on which hyperparams you pass it. For instance to train DPO, run python train.py hyperparams/dpo.yaml"""
 
+def check_cuda_gpu_availability():
+    if torch.cuda.is_available():
+        device = torch.cuda.get_device_name(0)
+        print(f"Using CUDA GPU: {device}")
+    else:
+        print("CUDA GPU is not available.")
+
 
 class DPOTrainer(trl.DPOTrainer):
     _tag_names = ["trl"]
@@ -188,7 +195,8 @@ class DPOTrainer(trl.DPOTrainer):
 
 def setup_logging(hps: Dict[str, Any]):
     # Choose logging and checkpoint saving directory
-    if hps["dataset"]["name"] == "Dahoas/synthetic-instruct-gptj-pairwise":
+    if hps["dataset"]["name"] == "Unified-Language-Model-Alignment/Anthropic_HH_Golden":
+    # "Dahoas/synthetic-instruct-gptj-pairwise":
         hps["dataset_name"] = "instruct"
     logdir = utils.choose_log_dir(
         f"{utils.run_dir}/{hps['dataset_name']}/training/{hps['training_algorithm']}",
@@ -352,4 +360,5 @@ def main():
 
 
 if __name__ == "__main__":
+    check_cuda_gpu_availability()
     main()
