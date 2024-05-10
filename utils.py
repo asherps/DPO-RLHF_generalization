@@ -159,7 +159,8 @@ def load_dataset(
         sample["prompt"] = tokenizer.apply_chat_template(messages[:-1], tokenize=False)
         sample["chosen"] = sample["chosen"][assistant_idx + 13 :]
         sample["rejected"] = sample["rejected"][assistant_idx + 13 :]
-
+        return sample 
+    
     def instruct_preprocess(sample):
         messages = []
         messages.append(
