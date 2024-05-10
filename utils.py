@@ -20,7 +20,7 @@ def check_cuda_gpu_availability():
         print("CUDA GPU is not available.")
 
 
-run_dir = f"drive/{getpass.getuser()}/project_data/calibrated_alignment/runs"
+run_dir = f"data"
 
 
 def argparser(include_hyperparams: bool = True):
@@ -63,11 +63,12 @@ def load_model(
     model: str,
     reward_model: bool = False,
     eval: bool = True,
+    PPO: bool = False,
 ):
     """Load model from HuggingFace and wrap with PEFT if needed."""
 
     # Load tokenizer
-    tokenizer = transformers.AutoTokenizer.from_pretrained(model)
+    tokenizer = transformers.AutoTokenizer.from_pretrained(model, padding_side='left')
     tokenizer.pad_token = tokenizer.eos_token
     # if "gen_kwargs" in hps:
     #    hps["gen_kwargs"]["pad_token_id"] = tokenizer.pad_token_id
@@ -78,7 +79,15 @@ def load_model(
         if reward_model
         else transformers.AutoModelForCausalLM
     )
-    model = model_class.from_pretrained(model, torch_dtype=torch.bfloat16)
+
+    # model_class = (
+    #     transformers.AutoModelForCausalLMWithValueHead 
+    #     if PPO else model_class
+    # )
+    if reward_model:
+        model = model_class.from_pretrained(model, torch_dtype=torch.bfloat16, num_labels=1)
+    else:
+        model = model_class.from_pretrained(model, torch_dtype=torch.bfloat16)
     model.to(torch.device("cuda:0"))
     model.config.pad_token_id = model.config.eos_token_id
     if eval:
@@ -166,8 +175,7 @@ def load_dataset(
         sample["prompt"] = tokenizer.apply_chat_template(messages[:-1], tokenize=False)
         sample["chosen"] = sample["chosen"][assistant_idx + 13 :]
         sample["rejected"] = sample["rejected"][assistant_idx + 13 :]
-        return sample 
-    
+        return sample
     def instruct_preprocess(sample):
         messages = []
         messages.append(
@@ -191,8 +199,8 @@ def load_dataset(
 
     # Make small if debug
     if debug:
-        dataset["train"] = dataset["train"].select(range(10))
-        dataset["test"] = dataset["test"].select(range(10))
+        dataset["train"] = dataset["train"].select(range(130))
+        dataset["test"] = dataset["test"].select(range(130))
 
     # Process dataset
     if name == "Anthropic/hh-rlhf":

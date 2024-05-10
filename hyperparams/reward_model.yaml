@@ -1,6 +1,5 @@
 # Model hyperparameters
 model: mistralai/Mistral-7B-Instruct-v0.2
-reward_model_path:
 
 peft_config_class: !!python/name:peft.tuners.lora.LoraConfig
 peft_config_kwargs:
