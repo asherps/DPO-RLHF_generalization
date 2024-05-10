@@ -195,6 +195,6 @@ def load_dataset(
         dataset = dataset.filter(lambda s: s["prompt"] is not None)
     elif name == "Unified-Language-Model-Alignment/Anthropic_HH_Golden":
         dataset = dataset.map(hh_rlhf_preprocess, batched=False)
-        dataset = dataset.filter(lambda s: s["prompt"] is not None)
+        # dataset = dataset.filter(lambda s: s["prompt"] is not None)
         
     return dataset
