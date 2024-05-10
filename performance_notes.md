@@ -44,3 +44,8 @@ Accuracy: 0.5891813039779663
 checkpoint-2000
 Accuracy: 0.5584795475006104
 
+
+run for dpo, may 10 @ night 
+dataset: Unified-Language-Model-Alignment/Anthropic_HH_Golden
+model: dpo
+gpu server: "instruct" (server 2)

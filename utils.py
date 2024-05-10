@@ -193,4 +193,8 @@ def load_dataset(
     elif name == "Dahoas/synthetic-instruct-gptj-pairwise":
         dataset = dataset.map(instruct_preprocess, batched=False)
         dataset = dataset.filter(lambda s: s["prompt"] is not None)
+    elif name == "Unified-Language-Model-Alignment/Anthropic_HH_Golden":
+        dataset = dataset.map(instruct_preprocess, batched=False)
+        dataset = dataset.filter(lambda s: s["prompt"] is not None)
+        
     return dataset
