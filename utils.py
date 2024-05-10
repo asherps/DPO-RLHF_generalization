@@ -12,6 +12,13 @@ import torch
 import transformers
 import trl
 
+def check_cuda_gpu_availability():
+    if torch.cuda.is_available():
+        device = torch.cuda.get_device_name(0)
+        print(f"Using CUDA GPU: {device}")
+    else:
+        print("CUDA GPU is not available.")
+
 
 run_dir = f"drive/{getpass.getuser()}/project_data/calibrated_alignment/runs"
 
