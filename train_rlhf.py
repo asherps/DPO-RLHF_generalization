@@ -22,6 +22,7 @@ import trl
 
 device = t.device("cuda" if t.cuda.is_available() else "cpu")
 
+
 def setup_logging(hps: Dict[str, Any]):
     # Choose logging and checkpoint saving directory
     logdir = utils.choose_log_dir(
@@ -60,14 +61,17 @@ def setup_logging(hps: Dict[str, Any]):
 
 def main():
     def custom_collate(batch):
-        input_ids = [item['input_ids'] for item in batch]
-        queries = [item['query'] for item in batch]
+        input_ids = [item["input_ids"] for item in batch]
+        queries = [item["query"] for item in batch]
 
         max_length = max(len(ids) for ids in input_ids)
-        input_ids = [ids + [tokenizer.pad_token_id] * (max_length - len(ids)) for ids in input_ids]
+        input_ids = [
+            ids + [tokenizer.pad_token_id] * (max_length - len(ids))
+            for ids in input_ids
+        ]
 
         input_ids = t.tensor(input_ids)
-        return {'input_ids': input_ids, 'queries': queries}
+        return {"input_ids": input_ids, "queries": queries}
 
     # Load hyperparameters
     args = utils.argparser().parse_args()
@@ -80,8 +84,6 @@ def main():
     hps["debug"] = args.debug
     if hps["debug"]:
         hps["training_kwargs"]["max_steps"] = 5
-
-
 
     # load model
     tokenizer, model = utils.load_model(
@@ -100,34 +102,34 @@ def main():
     logdir = setup_logging(hps)
 
     # I think PPO trainer fine tunes already, so we don't need this
-#     peft_config = LoraConfig(
-    
-#     task_type=TaskType.CAUSAL_LM, inference_mode=False, r=32, lora_alpha=16, lora_dropout=0.1,
-# ) # create LoRA config for the finetuning
+    #     peft_config = LoraConfig(
 
-#     model = get_peft_model(model, peft_config) # create a model ready for LoRA finetuning
+    #     task_type=TaskType.CAUSAL_LM, inference_mode=False, r=32, lora_alpha=16, lora_dropout=0.1,
+    # ) # create LoRA config for the finetuning
 
-#     tokenizer.pad_token = tokenizer.eos_token # need this because tokenizer doesn't have default padding
+    #     model = get_peft_model(model, peft_config) # create a model ready for LoRA finetuning
 
-#     # fine tune!
-#     training_args = TrainingArguments(
-#         output_dir="./results",
-#         num_train_epochs=3,
-#         per_device_train_batch_size=1,
-#         per_device_eval_batch_size=2,
-#         warmup_steps=500,
-#         weight_decay=0.01,
-#         logging_dir=logdir,
-#         logging_steps=10,
-#         learning_rate = 1e-3,
-#     )
+    #     tokenizer.pad_token = tokenizer.eos_token # need this because tokenizer doesn't have default padding
 
-#     trainer = Trainer(
-#         model=model,
-#         args=training_args,
-#         train_dataset=dataset,
-#     )
-#     trainer.train()
+    #     # fine tune!
+    #     training_args = TrainingArguments(
+    #         output_dir="./results",
+    #         num_train_epochs=3,
+    #         per_device_train_batch_size=1,
+    #         per_device_eval_batch_size=2,
+    #         warmup_steps=500,
+    #         weight_decay=0.01,
+    #         logging_dir=logdir,
+    #         logging_steps=10,
+    #         learning_rate = 1e-3,
+    #     )
+
+    #     trainer = Trainer(
+    #         model=model,
+    #         args=training_args,
+    #         train_dataset=dataset,
+    #     )
+    #     trainer.train()
 
     config = PPOConfig(
         model_name="mistralai/Mistral-7B-Instruct-v0.2",
@@ -155,10 +157,12 @@ def main():
         tokenizer=tokenizer,
     )
 
-    dl = ppo_trainer.prepare_dataloader(dataset['train'], data_collator=custom_collate)
+    dl = ppo_trainer.prepare_dataloader(dataset["train"], data_collator=custom_collate)
 
     # load reward model
-    reward_model = AutoModelForSequenceClassification.from_pretrained(hps["calibrated_model_path"])
+    reward_model = AutoModelForSequenceClassification.from_pretrained(
+        hps["calibrated_model_path"]
+    )
     reward_model = reward_model.to(t.device("cuda:0")).eval()
 
     generation_kwargs = {
@@ -171,15 +175,15 @@ def main():
     }
 
     # wandb.init()
-    print("Dataset size:", len(dataset['train']))
+    print("Dataset size:", len(dataset["train"]))
 
     epochs = 1
     for epoch in tqdm(range(epochs), "epoch: "):
         for batch in tqdm(dl):
             if batch is None:
-                print('hi')
+                print("hi")
                 continue
-                
+
             query_tensors = batch["input_ids"]
             # print(query_tensors.shape)
             query_tensors = [tensor.view(-1) for tensor in query_tensors]
