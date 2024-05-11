@@ -1,6 +1,7 @@
 # Model hyperparameters
 model: mistralai/Mistral-7B-Instruct-v0.2
-calibrated_model_path: "./drive/root/project_data/calibrated_alignment/runs/instruct/training/reward_model/run_3/checkpoints/checkpoint-4000"
+# calibrated_model_path: "./drive/root/project_data/calibrated_alignment/runs/instruct/training/reward_model/run_3/checkpoints/checkpoint-4000"
+calibrated_model_path: "sileod/deberta-v3-large-tasksource-rlhf-reward-model"
 
 peft_config_class: !!python/name:peft.tuners.lora.LoraConfig
 peft_config_kwargs:
@@ -14,15 +15,19 @@ dataset:
     data_dir: default  # Use both harmfuless and helpful splits
 
 dataset_name: instruct
-training_algorithm: reward_model
+training_algorithm: rlhf
 debug: False
 
 training_kwargs:
     per_device_train_batch_size: 1
-    per_device_eval_batch_size: 8
+    per_device_eval_batch_size: 1
     gradient_accumulation_steps: 8
-    max_steps: 10000
+    steps: 10000
     learning_rate: 0.0001
+    batch_size: 16
+    mini_batch_size: 2
+    learning_rate: 1.41e-5
+
 
 tags: []
 

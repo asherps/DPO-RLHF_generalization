@@ -64,6 +64,8 @@ def load_model(
     reward_model: bool = False,
     eval: bool = True,
     PPO: bool = False,
+    quantized: bool = False,
+    bnb_config: dict = False,
 ):
     """Load model from HuggingFace and wrap with PEFT if needed."""
 
@@ -85,10 +87,17 @@ def load_model(
     #     if PPO else model_class
     # )
     if reward_model:
-        model = model_class.from_pretrained(model, torch_dtype=torch.bfloat16, num_labels=1)
+        model = model_class.from_pretrained(model, torch_dtype=torch.bfloat16, num_labels=1).to(torch.device("cuda:0"))
+    elif quantized:
+        assert bnb_config is not None
+        model = model_class.from_pretrained(
+            model, 
+            torch_dtype=torch.bfloat16,
+            # load_in_4bit=True,
+            quantization_config=bnb_config,
+        )
     else:
-        model = model_class.from_pretrained(model, torch_dtype=torch.bfloat16)
-    model.to(torch.device("cuda:0"))
+        model = model_class.from_pretrained(model, torch_dtype=torch.bfloat16).to(torch.device("cuda:0"))
     model.config.pad_token_id = model.config.eos_token_id
     if eval:
         model.eval()
@@ -199,8 +208,8 @@ def load_dataset(
 
     # Make small if debug
     if debug:
-        dataset["train"] = dataset["train"].select(range(130))
-        dataset["test"] = dataset["test"].select(range(130))
+        dataset["train"] = dataset["train"].select(range(1000))
+        dataset["test"] = dataset["test"].select(range(1000))
 
     # Process dataset
     if name == "Anthropic/hh-rlhf":
