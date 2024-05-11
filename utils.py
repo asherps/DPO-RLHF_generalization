@@ -191,7 +191,7 @@ def load_dataset(
         sample["chosen"] = sample["chosen"][assistant_idx + 13 :]
         sample["rejected"] = sample["rejected"][assistant_idx + 13 :]
         if sft:
-            sample = sample["prompt"] + sample["chosen"]
+            sample["prompt"] = sample["prompt"] + sample["chosen"]
         return sample
 
     def instruct_preprocess(sample):
@@ -222,7 +222,7 @@ def load_dataset(
     # Process dataset
     if name == "Anthropic/hh-rlhf":
         dataset = dataset.map(hh_rlhf_preprocess, batched=False)
-        dataset = dataset.filter(lambda s: s["prompt"] is not None)
+        # dataset = dataset.filter(lambda s: s["prompt"] is not None)
 
     elif name == "Dahoas/synthetic-instruct-gptj-pairwise":
         dataset = dataset.map(instruct_preprocess, batched=False)
