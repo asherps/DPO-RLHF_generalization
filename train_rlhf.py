@@ -22,6 +22,7 @@ import trl
 
 device = t.device("cuda" if t.cuda.is_available() else "cpu")
 
+<<<<<<< HEAD
 #
 def reward_fn(
     model: AutoModel,
@@ -58,6 +59,8 @@ def reward_fn(
         # scores = logits.cpu().numpy().flatten().tolist()
 
         return logits
+=======
+>>>>>>> 45e4f9b4aa1726566cfbba7db799fb87eb50101d
 
 def setup_logging(hps: Dict[str, Any]):
     # Choose logging and checkpoint saving directory
