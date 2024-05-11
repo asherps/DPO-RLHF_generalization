@@ -12,6 +12,7 @@ import torch
 import transformers
 import trl
 
+
 def check_cuda_gpu_availability():
     if torch.cuda.is_available():
         device = torch.cuda.get_device_name(0)
@@ -70,7 +71,7 @@ def load_model(
     """Load model from HuggingFace and wrap with PEFT if needed."""
 
     # Load tokenizer
-    tokenizer = transformers.AutoTokenizer.from_pretrained(model, padding_side='left')
+    tokenizer = transformers.AutoTokenizer.from_pretrained(model, padding_side="left")
     tokenizer.pad_token = tokenizer.eos_token
     # if "gen_kwargs" in hps:
     #    hps["gen_kwargs"]["pad_token_id"] = tokenizer.pad_token_id
@@ -83,21 +84,25 @@ def load_model(
     )
 
     # model_class = (
-    #     transformers.AutoModelForCausalLMWithValueHead 
+    #     transformers.AutoModelForCausalLMWithValueHead
     #     if PPO else model_class
     # )
     if reward_model:
-        model = model_class.from_pretrained(model, torch_dtype=torch.bfloat16, num_labels=1).to(torch.device("cuda:0"))
+        model = model_class.from_pretrained(
+            model, torch_dtype=torch.bfloat16, num_labels=1
+        ).to(torch.device("cuda:0"))
     elif quantized:
         assert bnb_config is not None
         model = model_class.from_pretrained(
-            model, 
+            model,
             torch_dtype=torch.bfloat16,
             # load_in_4bit=True,
             quantization_config=bnb_config,
         )
     else:
-        model = model_class.from_pretrained(model, torch_dtype=torch.bfloat16).to(torch.device("cuda:0"))
+        model = model_class.from_pretrained(model, torch_dtype=torch.bfloat16).to(
+            torch.device("cuda:0")
+        )
     model.config.pad_token_id = model.config.eos_token_id
     if eval:
         model.eval()
@@ -138,6 +143,7 @@ def load_dataset(
     name: str,  # HuggingFace name of dataset
     data_dir: Optional[str],  # Specifies splits of dataset to use
     debug: bool,
+    sft=False,
 ) -> datasets.DatasetDict:
     """Load and preprocess dataset."""
 
@@ -184,7 +190,10 @@ def load_dataset(
         sample["prompt"] = tokenizer.apply_chat_template(messages[:-1], tokenize=False)
         sample["chosen"] = sample["chosen"][assistant_idx + 13 :]
         sample["rejected"] = sample["rejected"][assistant_idx + 13 :]
+        if sft:
+            sample["prompt"] = sample["prompt"] + sample["chosen"]
         return sample
+
     def instruct_preprocess(sample):
         messages = []
         messages.append(
@@ -210,16 +219,16 @@ def load_dataset(
     if debug:
         dataset["train"] = dataset["train"].select(range(1000))
         dataset["test"] = dataset["test"].select(range(1000))
-
     # Process dataset
     if name == "Anthropic/hh-rlhf":
         dataset = dataset.map(hh_rlhf_preprocess, batched=False)
-        dataset = dataset.filter(lambda s: s["prompt"] is not None)
+        # dataset = dataset.filter(lambda s: s["prompt"] is not None)
+
     elif name == "Dahoas/synthetic-instruct-gptj-pairwise":
         dataset = dataset.map(instruct_preprocess, batched=False)
         dataset = dataset.filter(lambda s: s["prompt"] is not None)
     elif name == "Unified-Language-Model-Alignment/Anthropic_HH_Golden":
         dataset = dataset.map(hh_rlhf_preprocess, batched=False)
         dataset = dataset.filter(lambda s: s["prompt"] is not None)
-        
+
     return dataset
