@@ -118,6 +118,6 @@ def main():
     wandb.finish()
     del model
     del trainer
-    torch.cuda.empty_cache()
+    t.cuda.empty_cache()
 if __name__ == "__main__":
     main()
