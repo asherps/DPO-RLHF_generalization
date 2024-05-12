@@ -1,0 +1,33 @@
+model: mistralai/Mistral-7B-Instruct-v0.2
+
+dataset:
+    name: Anthropic/hh-rlhf
+    # Dahoas/synthetic-instruct-gptj-pairwise
+    data_dir: default  # Use both harmfuless and helpful splits
+
+dataset_name: Anthropic_hh
+training_algorithm: sft
+
+debug: False
+
+training_kwargs:
+    per_device_train_batch_size: 1
+    per_device_eval_batch_size: 8
+    gradient_accumulation_steps: 8
+    max_steps: 20
+    learning_rate: 0.0001
+
+peft_config_class: !!python/name:peft.tuners.lora.LoraConfig
+peft_config_kwargs:
+    lora_alpha: 128
+    lora_dropout: 0.05
+    r: 256
+    # bias: "none"
+    # target_modules: "all-linear"
+    # task_type: "CAUSAL_LM"
+
+    # r: 16
+    # lora_alpha: 16
+    # lora_dropout: 0.05
+
+tags: []
