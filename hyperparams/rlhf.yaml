@@ -1,13 +1,22 @@
 # Model hyperparameters
 model: mistralai/Mistral-7B-Instruct-v0.2
 # calibrated_model_path: "./drive/root/project_data/calibrated_alignment/runs/instruct/training/reward_model/run_3/checkpoints/checkpoint-4000"
-calibrated_model_path: "sileod/deberta-v3-large-tasksource-rlhf-reward-model"
+# rm_path: "sileod/deberta-v3-large-tasksource-rlhf-reward-model"
+rm_path: "OpenAssistant/reward-model-deberta-v3-large-v2"
+
 
 peft_config_class: !!python/name:peft.tuners.lora.LoraConfig
-peft_config_kwargs:
-    r: 16
-    lora_alpha: 16
+generator_peft_config_kwargs:
+    lora_alpha: 128
     lora_dropout: 0.05
+    r: 256
+
+rm_peft_config:
+    task_type: TaskType.SEQ_CLS
+    inference_mode: True
+    r: 8
+    lora_alpha: 32
+    lora_dropout: 0.1
 
 # Dataset hyperparameters
 dataset:
@@ -19,14 +28,13 @@ training_algorithm: rlhf
 debug: False
 
 training_kwargs:
-    per_device_train_batch_size: 1
-    per_device_eval_batch_size: 1
+    # per_device_train_batch_size: 1
+    # per_device_eval_batch_size: 1
     gradient_accumulation_steps: 8
     steps: 10000
-    learning_rate: 0.0001
     batch_size: 16
     mini_batch_size: 2
-    learning_rate: 1.41e-5
+    learning_rate: 1.41e-4
 
 
 tags: []
