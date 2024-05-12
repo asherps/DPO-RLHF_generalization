@@ -1,0 +1,15 @@
+model = mistralai/Mistral-7B-Instruct-v0.2
+rm_path: "OpenAssistant/reward-model-deberta-v3-large-v2"
+
+# in distribution dataset
+in-dataset: 
+    name: Anthropic/hh-rlhf
+    data_dir: default # helpful harmless spliuts
+
+training_kwargs:
+    gradient_accumulation_steps: 8
+    steps: 10000
+    batch_size: 16
+    mini_batch_size: 2
+    learning_rate: 1-e4
+
