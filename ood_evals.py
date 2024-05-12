@@ -7,24 +7,19 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 device = t.device("cuda" if t.cuda.is_available() else "cpu")
 
-
 def load_custom_model(
     checkpoint_path: str,
 ):
     """Load model from a checkpoint"""
 
-    # Load tokenizer
-    tokenizer = AutoTokenizer.from_pretrained(checkpoint_path)
-    tokenizer.pad_token = tokenizer.eos_token
 
     # Load model from the specific checkpoint
     model = (
-        AutoModelForCausalLM.from_pretrained(checkpoint_path, torch_dtype=t.bfloat16)
-        .to(t.device("cuda:0"))
+        AutoModelForCausalLM.from_pretrained(checkpoint_path)
+        .to(t.device(device))
         .eval()
     )
-
-    return tokenizer, model
+    return model
 
 
 def evaluate_generations(eval_model, tokenizer, texts):
@@ -41,7 +36,8 @@ def evaluate_generations(eval_model, tokenizer, texts):
                 input_ids, max_length=input_ids.shape[1] + 3
             )  # +3 for potential numerical output
             decoded_output = tokenizer.decode(outputs[0], skip_special_tokens=True)
-
+            
+            print("EVAL MODEL OUTPUT" + decoded_output)
         try:
             # Extract numerical score from the model's response
             score = float(decoded_output.strip().split()[-1])
@@ -67,19 +63,21 @@ def main():
     # load the model in need of evaluation
     model_to_test = load_custom_model(hps["checkpoint_path"])
 
-    dataset = utils.load_dataset(tokenizer, **hps["dataset"], debug=False)
-    dataset = dataset["train"][:5]
+    dataset = utils.load_dataset(tokenizer, **hps["dataset"], debug=True)
 
     # Generate text using model_to_test
     generations = []
-    for data in dataset:
+    for data in dataset["train"]["prompt"][:5]:
         inputs = tokenizer(
-            data["input"], return_tensors="pt", padding=True, truncation=True
+            data, return_tensors="pt", padding=True, truncation=True
         ).to(device)
-        outputs = model_to_test.generate(**inputs)
+        outputs = model_to_test.generate(**inputs, max_new_tokens = 200,     do_sample=True,
+        top_k=50,
+        top_p=0.95)
         decoded_outputs = [
             tokenizer.decode(output, skip_special_tokens=True) for output in outputs
         ]
+        print("GENERATION OUTPUT" + str(decoded_outputs))
         generations.extend(decoded_outputs)
 
     # Evaluate each generation

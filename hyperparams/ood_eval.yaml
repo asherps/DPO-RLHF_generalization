@@ -1,5 +1,5 @@
 # Model to test
-checkpoint_path: aosdfjasdfad
+checkpoint_path: sft_model/checkpoint-390
 
 # Model used for evaluation
 eval_model: mistralai/Mistral-7B-Instruct-v0.2
