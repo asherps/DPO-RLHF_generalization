@@ -1,0 +1,12 @@
+# Model to test
+checkpoint_path: aosdfjasdfad
+
+# Model used for evaluation
+eval_model: mistralai/Mistral-7B-Instruct-v0.2
+
+dataset:
+    name: Anthropic/hh-rlhf
+    # Dahoas/synthetic-instruct-gptj-pairwise
+    data_dir: default
+
+
