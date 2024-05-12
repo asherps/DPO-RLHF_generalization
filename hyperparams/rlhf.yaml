@@ -1,7 +1,9 @@
 # Model hyperparameters
 model: mistralai/Mistral-7B-Instruct-v0.2
 # calibrated_model_path: "./drive/root/project_data/calibrated_alignment/runs/instruct/training/reward_model/run_3/checkpoints/checkpoint-4000"
-rm_path: "sileod/deberta-v3-large-tasksource-rlhf-reward-model"
+# rm_path: "sileod/deberta-v3-large-tasksource-rlhf-reward-model"
+rm_path: "OpenAssistant/reward-model-deberta-v3-large-v2"
+
 
 peft_config_class: !!python/name:peft.tuners.lora.LoraConfig
 generator_peft_config_kwargs:
