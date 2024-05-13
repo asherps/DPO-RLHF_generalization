@@ -22,12 +22,6 @@ peft_config_kwargs:
     lora_alpha: 128
     lora_dropout: 0.05
     r: 256
-    # bias: "none"
-    # target_modules: "all-linear"
-    # task_type: "CAUSAL_LM"
 
-    # r: 16
-    # lora_alpha: 16
-    # lora_dropout: 0.05
 
 tags: []
