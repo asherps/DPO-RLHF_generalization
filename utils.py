@@ -72,7 +72,7 @@ def load_model(
 
     # Load tokenizer
     tokenizer = transformers.AutoTokenizer.from_pretrained(model, padding_side="left")
-    tokenizer.pad_token = tokenizer.eos_token
+    tokenizer.pad_token = '$'
     # if "gen_kwargs" in hps:
     #    hps["gen_kwargs"]["pad_token_id"] = tokenizer.pad_token_id
 
@@ -103,7 +103,7 @@ def load_model(
         model = model_class.from_pretrained(model, torch_dtype=torch.bfloat16).to(
             torch.device("cuda:0")
         )
-    model.config.pad_token_id = model.config.eos_token_id
+    model.config.pad_token_id = tokenizer.pad_token_id
     if eval:
         model.eval()
 
@@ -207,6 +207,8 @@ def load_dataset(
         sample["prompt"] = tokenizer.apply_chat_template(messages, tokenize=False)
         sample["chosen"] = sample["chosen"]
         sample["rejected"] = sample["rejected"]
+        if sft:
+            sample["prompt"] = sample["prompt"] + sample["chosen"]
         return sample
 
     # Load dataset

@@ -1,0 +1,7 @@
+# Robust Preference Learning: Contrasting the Out-of-Distribution Generalization of RLHF and DPO
+
+6.8200 | Sensorimotor Learning | Claire Wang, Misha Gerovitch, Asher Parker-Sartori
+
+Ensuring that their the goals and actions of AI systems are aligned with human intentions continues to be important as AI systems become increasingly integrated into everyday life, business, and critical infrastructure. Reinforcement Learning from Human Feedback (RLHF) has been used by many leading AI developers to align large language models (LLMs) with human values by training a reward model on human preference data and then using Proximal Policy Optimization (PPO) to tune the LLM. Direct Policy Optimization (DPO) was designed to perform the same task while reducing the RL to a form of supervised learning, allowing the LLM to implicitly learn a reward model to predict human preferences. We study how well models trained on RLHF and DPO generalize to new distributions and quantify this \textit{generalization gap}. In this paper, we find that according to a variety of metrics, models trained on DPO generalize better to new distributions than models trained on RLHF. However, due to instability in our PPO training runs, our results may unfairly disadvantage RLHF in the comparison. RLHF is sensitive to small hyperparameter changes, and if our experiment were performed more rigorously at a larger scale, it is possible that our results would differ. 
+
+Look at various branches to look at a variety of different process in PPO, DPO, RLHF, and other models.

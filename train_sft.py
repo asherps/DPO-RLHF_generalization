@@ -1,8 +1,6 @@
-from trl import SFTTrainer, AutoModelForCausalLMWithValueHead
+from trl import SFTTrainer
 import utils
 from transformers import (
-    AutoTokenizer,
-    AutoModelForSequenceClassification,
     BitsAndBytesConfig,
     TrainingArguments,
 )
@@ -10,7 +8,6 @@ import yaml
 import getpass
 import wandb
 import torch as t
-from tqdm import tqdm
 from typing import Dict, Any
 
 
@@ -79,15 +76,10 @@ def main():
     )
     dataset = utils.load_dataset(tokenizer, **hps["dataset"], debug=False, sft=True)
 
-    def memory():
-        allocated_memory = t.cuda.memory_allocated()
-        print(f"memory allocated: {allocated_memory / (2**30)}")
-
-    print(memory())
 
     args = TrainingArguments(
-        output_dir="sft_model",  # directory to save and repository id
-        num_train_epochs=1,  # number of training epochs
+        output_dir="sft_model_instruct",  # directory to save and repository id
+        num_train_epochs=2,  # number of training epochs
         per_device_train_batch_size=4,  # batch size per device during training
         gradient_accumulation_steps=2,  # number of steps before performing a backward/update pass
         gradient_checkpointing=True,  # use gradient checkpointing to save memory
@@ -103,7 +95,7 @@ def main():
     trainer = SFTTrainer(
         model,
         tokenizer=tokenizer,
-        train_dataset=dataset["train"].select(range(40000)),
+        train_dataset=dataset["train"].select(range(20000)),
         args=args,
         dataset_text_field="prompt",
         dataset_batch_size=1000,
