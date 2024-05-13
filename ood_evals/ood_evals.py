@@ -1,3 +1,5 @@
+"""deprecated OOD eval code"""
+
 import utils
 import yaml
 import torch as t
@@ -7,11 +9,11 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 device = t.device("cuda" if t.cuda.is_available() else "cpu")
 
+
 def load_custom_model(
     checkpoint_path: str,
 ):
     """Load model from a checkpoint"""
-
 
     # Load model from the specific checkpoint
     model = (
@@ -37,7 +39,7 @@ def evaluate_generations(eval_model, tokenizer, texts):
                 input_ids, max_length=input_ids.shape[1] + 3
             )  # +3 for potential numerical output
             decoded_output = tokenizer.decode(outputs[0], skip_special_tokens=True)
-            
+
             print("EVAL MODEL OUTPUT" + decoded_output)
         try:
             # Extract numerical score from the model's response
@@ -69,12 +71,12 @@ def main():
     # Generate text using model_to_test
     generations = []
     for data in dataset["test"]["prompt"][:5]:
-        inputs = tokenizer(
-            data, return_tensors="pt", padding=True, truncation=True
-        ).to(device)
-        outputs = model_to_test.generate(**inputs, max_new_tokens = 200,     do_sample=True,
-        top_k=50,
-        top_p=0.95)
+        inputs = tokenizer(data, return_tensors="pt", padding=True, truncation=True).to(
+            device
+        )
+        outputs = model_to_test.generate(
+            **inputs, max_new_tokens=200, do_sample=True, top_k=50, top_p=0.95
+        )
         decoded_outputs = [
             tokenizer.decode(output, skip_special_tokens=True) for output in outputs
         ]

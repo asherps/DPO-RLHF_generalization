@@ -1,3 +1,5 @@
+""" Tests accuracy on Anthropic Model Written Evaluations on the model path specified in the Hyperparams file"""
+
 import torch
 from typing import Optional
 import yaml
@@ -17,9 +19,13 @@ def load_model(
     tokenizer.pad_token = tokenizer.eos_token
 
     # Load model from the specific checkpoint
-    model = transformers.AutoModelForCausalLM.from_pretrained(
-        checkpoint_path, torch_dtype=torch.bfloat16
-    ).to(torch.device("cuda:0")).eval()
+    model = (
+        transformers.AutoModelForCausalLM.from_pretrained(
+            checkpoint_path, torch_dtype=torch.bfloat16
+        )
+        .to(torch.device("cuda:0"))
+        .eval()
+    )
 
     return tokenizer, model
 
@@ -50,10 +56,10 @@ def preprocess_mwe(dataset, tokenizer):
             [{"role": "user", "content": formatted_question}], tokenize=False
         )
         english_questions.append(formatted_question)
-        if label==' (A)':
-            final_labels.append([1,0,0,0])
-        elif label==' (B)':
-            final_labels.append([0,1,0,0])
+        if label == " (A)":
+            final_labels.append([1, 0, 0, 0])
+        elif label == " (B)":
+            final_labels.append([0, 1, 0, 0])
     return final_labels, english_questions
 
 
@@ -63,9 +69,7 @@ def model_answers():
     with open(args.hyperparam_file) as f:
         hps = yaml.load(f, Loader=yaml.FullLoader)
 
-    tokenizer, model = load_model(
-        hps["model_path"]
-    )
+    tokenizer, model = load_model(hps["model_path"])
 
     # Load and preprocess the dataset
     dataset = load_dataset("Anthropic/model-written-evals")["train"]

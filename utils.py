@@ -72,9 +72,7 @@ def load_model(
 
     # Load tokenizer
     tokenizer = transformers.AutoTokenizer.from_pretrained(model, padding_side="left")
-    tokenizer.pad_token = '$'
-    # if "gen_kwargs" in hps:
-    #    hps["gen_kwargs"]["pad_token_id"] = tokenizer.pad_token_id
+    tokenizer.pad_token = "</s>"
 
     # Load model
     model_class = (
@@ -83,10 +81,6 @@ def load_model(
         else transformers.AutoModelForCausalLM
     )
 
-    # model_class = (
-    #     transformers.AutoModelForCausalLMWithValueHead
-    #     if PPO else model_class
-    # )
     if reward_model:
         model = model_class.from_pretrained(
             model, torch_dtype=torch.bfloat16, num_labels=1
@@ -96,7 +90,6 @@ def load_model(
         model = model_class.from_pretrained(
             model,
             torch_dtype=torch.bfloat16,
-            # load_in_4bit=True,
             quantization_config=bnb_config,
         )
     else:
@@ -106,7 +99,6 @@ def load_model(
     model.config.pad_token_id = tokenizer.pad_token_id
     if eval:
         model.eval()
-
     return tokenizer, model
 
 

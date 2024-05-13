@@ -1,3 +1,5 @@
+"""Performs SFT on a specified model"""
+
 from trl import SFTTrainer
 import utils
 from transformers import (
@@ -75,7 +77,6 @@ def main():
         bnb_config=bnb_config,
     )
     dataset = utils.load_dataset(tokenizer, **hps["dataset"], debug=False, sft=True)
-
 
     args = TrainingArguments(
         output_dir="sft_model_instruct",  # directory to save and repository id

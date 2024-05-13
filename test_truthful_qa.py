@@ -1,3 +1,5 @@
+""" Tests accuracy on Truthful QA on the model path specified in the Hyperparams file"""
+
 import random
 import torch
 from typing import Optional

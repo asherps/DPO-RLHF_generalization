@@ -1,3 +1,5 @@
+"""deprecated RLHF training code"""
+
 from trl import PPOConfig, PPOTrainer
 import utils
 from transformers import (
